@@ -90,9 +90,11 @@
                m1.id             teachplanMeidaId,
                m1.media_id       mediaId
         from teachplan one
-                 left join teachplan two on two.parentid = one.id
+                 left join teachplan two on two.parentid = one.id and one.status = 1 and two.status = 1
                  left join teachplan_media m1 on two.id = m1.teachplan_id
         where one.parentid = 0
           and one.course_id = #{id}
+          and one.status = 1
+        order by one.orderby, two.orderby
     </select>
 </mapper>

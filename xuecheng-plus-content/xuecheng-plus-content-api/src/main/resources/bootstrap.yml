@@ -1,25 +1,50 @@
-server:
-  servlet:
-    context-path: /content
-  port: 63040
+#server:
+#  servlet:
+#    context-path: /content
+#  port: 63040
 #微服务配置
 spring:
   application:
-    name: content-api
-  datasource:
-    driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://192.168.101.65:3306/xcplus_content?serverTimezone=UTC&userUnicode=true&useSSL=false
-    username: root
-    password: mysql
+    name: content-api  # 配置管理时 服务名+环境名+后缀 content-api-dev.yaml
+  cloud:
+    nacos:
+      server-addr: 192.168.101.65:8848
+      discovery:  #服务注册的相关配置 (服务注册时使用)
+        namespace: dev
+        group: xuecheng-plus-project
+      config: #配置文件的相关信息   (需要从nacos拉取配置时添加)
+        namespace: dev
+        group: xuecheng-plus-project
+        file-extension: yaml
+        refresh-enabled: true
+        extension-configs: # 引用(扩展)了nacos管理的service配置 content-service-dev.yaml    如果该模块没有用到部分功能的配置 但该模块依赖的其他模块的用到了 该功能的配置可以使用依赖的引用
+          - data-id: content-service-${spring.profiles.active}.yaml
+            group: xuecheng-plus-project
+            refresh: true
+        shared-configs:   #(为该模块引入全局配置)
+          - data-id: swagger-${spring.profiles.active}.yaml
+            group: xuecheng-plus-common
+            refresh: true
+          - data-id: logging-${spring.profiles.active}.yaml
+            group: xuecheng-plus-common
+            refresh: true
+
+  #  datasource:
+#    driver-class-name: com.mysql.cj.jdbc.Driver
+#    url: jdbc:mysql://192.168.101.65:3306/xcplus_content?serverTimezone=UTC&userUnicode=true&useSSL=false
+#    username: root
+#    password: mysql
+  profiles:
+    active: dev #环境名
 # 日志文件配置路径
-logging:
-  config: classpath:log4j2-dev.xml
+#logging:
+#  config: classpath:log4j2-dev.xml
 
 
 # swagger 文档配置
-swagger:
-  title: "学成在线内容管理系统"
-  description: "内容系统管理系统对课程相关信息进行业务管理数据"
-  base-package: com.xuecheng.content          #包扫描路径 本包或者子包下的所有controller
-  enabled: true
-  version: 1.0.0
+#swagger:
+#  title: "学成在线内容管理系统"
+#  description: "内容系统管理系统对课程相关信息进行业务管理数据"
+#  base-package: com.xuecheng.content          #包扫描路径 本包或者子包下的所有controller
+#  enabled: true
+#  version: 1.0.0

@@ -19,6 +19,12 @@ public class CourseCategoryController {
 
     @Autowired
     private CourseCategoryService courseCategoryService;
+    /***
+    * @description 查看课程的树状分类
+    * @return java.util.List<com.xuecheng.content.model.dto.CourseCategoryTreeDto>
+    * @author qjp
+    * @date 2023/3/13 23:26
+    */
     @GetMapping("/course-category/tree-nodes")
     public List<CourseCategoryTreeDto> queryTreeNodes(){
         return courseCategoryService.queryTreeNodes("1");

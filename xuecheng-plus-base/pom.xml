@@ -61,7 +61,7 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-log4j2</artifactId>
 		</dependency>
-		<!--根据扩展名取mimetype-->
+		<!--根据扩展名取mimetype(媒体资源类型)的工具包-->
 		<dependency>
 			<groupId>com.j256.simplemagic</groupId>
 			<artifactId>simplemagic</artifactId>

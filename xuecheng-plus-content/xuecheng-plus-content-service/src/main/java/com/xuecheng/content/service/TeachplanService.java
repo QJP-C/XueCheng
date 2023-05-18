@@ -28,4 +28,16 @@ public interface TeachplanService {
     * @date 2023/3/10 19:09
     */
     public void saveTeachplan(SaveTeachplanDto saveTeachplanDto);
+    /***
+    * @description 根据id删除指定课程计划
+    * @param courseId
+    * @return void
+    * @author qjp
+    * @date 2023/3/13 11:31
+    */
+    void deleteCourse(Long id);
+
+    void moveDown(Long id);
+
+    void moveUp(Long id);
 }

@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.constraints.NotNull;
 import java.util.List;
 
 
@@ -36,5 +37,22 @@ public class TeachplanController {
     @PostMapping("/teachplan")
     public void saveTeachplan(@RequestBody @Validated SaveTeachplanDto teachplan){
         teachplanService.saveTeachplan(teachplan);
+    }
+
+    @ApiOperation("根据id删除课程计划")
+    @DeleteMapping("/teachplan/{id}")
+    public void deleteCourse(@PathVariable("id")@Validated @NotNull(message = "课程计划id不能为空") Long courseId){
+        teachplanService.deleteCourse(courseId);
+    }
+
+    @ApiOperation("向下移动")
+    @PostMapping("/teachplan/movedown/{id}")
+    public void moveDown(@PathVariable Long id){
+        teachplanService.moveDown(id);
+    }
+    @ApiOperation("向上移动")
+    @PostMapping("/teachplan/moveup/{id}")
+    public void moveUp(@PathVariable Long id){
+        teachplanService.moveUp(id);
     }
 }

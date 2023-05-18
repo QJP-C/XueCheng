@@ -2,15 +2,18 @@ package com.xuecheng.content.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xuecheng.content.mapper.TeachplanMapper;
+import com.xuecheng.content.mapper.TeachplanMediaMapper;
 import com.xuecheng.content.model.dto.SaveTeachplanDto;
 import com.xuecheng.content.model.dto.TeachplanDto;
 import com.xuecheng.content.model.po.Teachplan;
 import com.xuecheng.content.model.po.TeachplanMedia;
 import com.xuecheng.content.service.TeachplanService;
+import com.xuecheng.xuechengplusbase.exception.XueChengPlusException;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -23,6 +26,8 @@ import java.util.List;
 public class TeachplanServiceImpl implements TeachplanService {
     @Autowired
     TeachplanMapper teachplanMapper;
+    @Autowired
+    TeachplanMediaMapper teachplanMediaMapper;
     /***
     * @description 根据id查询课程计划信息
     * @param courseId
@@ -65,6 +70,8 @@ public class TeachplanServiceImpl implements TeachplanService {
             teachplanMapper.updateById(teachplan);
         }
     }
+
+
     /***
     * @description 求课程计划排序字段(看现有多少同级字段,防止所有字段后面)
     * @param parentid 
@@ -78,5 +85,99 @@ public class TeachplanServiceImpl implements TeachplanService {
         queryWrapper.eq(Teachplan::getCourseId, courseId).eq(Teachplan::getParentid, parentid);
         Integer count = teachplanMapper.selectCount(queryWrapper);
         return count+1;
+    }
+    /***
+     * @description 根据id删除课程计划
+     * @param id
+     * @return void
+     * @author qjp
+     * @date 2023/3/13 11:33
+     */
+    @Override
+    public void deleteCourse(Long id) {
+        LambdaQueryWrapper<Teachplan> wrapper1 = new LambdaQueryWrapper<>();
+        wrapper1.eq(Teachplan::getParentid,id);
+        Integer count = teachplanMapper.selectCount(wrapper1);
+        if (count>=1){
+            //有子小节
+            XueChengPlusException.cast("课程计划信息还有子级信息，无法操作");
+        }else {
+            Teachplan teachplan = new Teachplan();
+            teachplan.setId(id);
+            teachplan.setStatus(0);
+            teachplan.setCreateDate(LocalDateTime.now());
+            teachplanMapper.updateById(teachplan);
+            LambdaQueryWrapper<TeachplanMedia> wrapper2 = new LambdaQueryWrapper<>();
+            wrapper2.eq(TeachplanMedia::getTeachplanId,id);
+            teachplanMediaMapper.delete(wrapper2);
+        }
+    }
+    /***
+    * @description 课程计划向下移动
+    * @param id
+    * @return void
+    * @author qjp
+    * @date 2023/3/13 17:04
+    */
+    @Override
+    public void moveDown(Long id) {
+        if (id == null){
+            XueChengPlusException.cast("课程计划id不能为空");
+        }
+        Teachplan teachplan = teachplanMapper.selectById(id);
+        Integer orderBy1 = teachplan.getOrderby();
+        //看看有没有后一个
+        LambdaQueryWrapper<Teachplan> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(Teachplan::getParentid, teachplan.getParentid())
+                .eq(Teachplan::getCourseId,teachplan.getCourseId())
+                .eq(Teachplan::getOrderby, orderBy1+1);
+        //交换
+        exchange(teachplan, wrapper);
+    }
+    /***
+    * @description 课程计划向上移动
+    * @param id
+    * @return void
+    * @author qjp
+    * @date 2023/3/13 17:41
+    */
+    @Override
+    public void moveUp(Long id) {
+        if (id == null){
+            XueChengPlusException.cast("课程计划id不能为空");
+        }
+        Teachplan teachplan = teachplanMapper.selectById(id);
+        Integer orderBy1 = teachplan.getOrderby();
+        //看看有没有前一个
+        LambdaQueryWrapper<Teachplan> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(Teachplan::getParentid, teachplan.getParentid())
+                .eq(Teachplan::getCourseId,teachplan.getCourseId())
+                .eq(Teachplan::getOrderby, orderBy1-1);
+        //交换
+        exchange(teachplan, wrapper);
+    }
+
+    /***
+     * @description 交换两个计划的排序字段
+     * @param teachplan
+     * @param wrapper
+     * @return void
+     * @author qjp
+     * @date 2023/3/13 17:40
+     */
+    private void exchange(Teachplan teachplan, LambdaQueryWrapper<Teachplan> wrapper) {
+        Integer count = teachplanMapper.selectCount(wrapper);
+        if (count !=1L){
+            return;
+        }else {
+            //交换两个计划的orderby
+            Teachplan teachplan1 = teachplanMapper.selectOne(wrapper);
+            Integer orderby1 = teachplan1.getOrderby();
+            Integer orderby = teachplan.getOrderby();
+            teachplan.setOrderby(orderby1);
+            teachplan1.setOrderby(orderby);
+            teachplanMapper.updateById(teachplan);
+            teachplanMapper.updateById(teachplan1);
+        }
     }
 }

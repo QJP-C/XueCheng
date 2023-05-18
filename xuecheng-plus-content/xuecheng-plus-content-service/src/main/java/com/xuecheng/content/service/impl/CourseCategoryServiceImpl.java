@@ -26,6 +26,13 @@ public class CourseCategoryServiceImpl implements CourseCategoryService {
 
     @Resource
     private CourseCategoryMapper CourseCategoryMapper;
+    /***
+    * @description 查看课程的树状分类
+    * @param id
+    * @return java.util.List<com.xuecheng.content.model.dto.CourseCategoryTreeDto>
+    * @author qjp
+    * @date 2023/3/13 23:27
+    */
     @Override
     public List<CourseCategoryTreeDto> queryTreeNodes(String id) {
         //调用mapper递归查询出分类信息
