@@ -2,7 +2,7 @@ package com.xuecheng.media.api;
 
 import com.xuecheng.media.model.dto.UploadFileParamsDto;
 import com.xuecheng.media.service.MediaFileService;
-import com.xuecheng.xuechengplusbase.model.RestResponse;
+import com.xuecheng.xuechengplus.base.model.RestResponse;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -59,7 +59,7 @@ public class BigFilesController {
         return mediaFileService.uploadChunk(fileMd5, chunk, localFilePath);
     }
 
-    @ApiOperation(value = "合并文件")
+    @ApiOperation(value = "合并分块")
     @PostMapping("/upload/mergechunks")
     public RestResponse mergechunks(@RequestParam("fileMd5") String fileMd5,
                                     @RequestParam("fileName") String fileName,

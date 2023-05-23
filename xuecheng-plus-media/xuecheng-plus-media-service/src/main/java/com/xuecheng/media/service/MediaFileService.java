@@ -5,9 +5,9 @@ import com.xuecheng.media.model.dto.QueryMediaParamsDto;
 import com.xuecheng.media.model.dto.UploadFileParamsDto;
 import com.xuecheng.media.model.dto.UploadFileResultDto;
 import com.xuecheng.media.model.po.MediaFiles;
-import com.xuecheng.xuechengplusbase.model.PageParams;
-import com.xuecheng.xuechengplusbase.model.PageResult;
-import com.xuecheng.xuechengplusbase.model.RestResponse;
+import com.xuecheng.xuechengplus.base.model.PageParams;
+import com.xuecheng.xuechengplus.base.model.PageResult;
+import com.xuecheng.xuechengplus.base.model.RestResponse;
 
 /**
  * @author Mr.M

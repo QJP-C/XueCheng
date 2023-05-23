@@ -5,15 +5,17 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.j256.simplemagic.ContentInfo;
 import com.j256.simplemagic.ContentInfoUtil;
 import com.xuecheng.media.mapper.MediaFilesMapper;
+import com.xuecheng.media.mapper.MediaProcessMapper;
 import com.xuecheng.media.model.dto.QueryMediaParamsDto;
 import com.xuecheng.media.model.dto.UploadFileParamsDto;
 import com.xuecheng.media.model.dto.UploadFileResultDto;
 import com.xuecheng.media.model.po.MediaFiles;
+import com.xuecheng.media.model.po.MediaProcess;
 import com.xuecheng.media.service.MediaFileService;
-import com.xuecheng.xuechengplusbase.exception.XueChengPlusException;
-import com.xuecheng.xuechengplusbase.model.PageParams;
-import com.xuecheng.xuechengplusbase.model.PageResult;
-import com.xuecheng.xuechengplusbase.model.RestResponse;
+import com.xuecheng.xuechengplus.base.exception.XueChengPlusException;
+import com.xuecheng.xuechengplus.base.model.PageParams;
+import com.xuecheng.xuechengplus.base.model.PageResult;
+import com.xuecheng.xuechengplus.base.model.RestResponse;
 import io.minio.*;
 import io.minio.messages.DeleteError;
 import io.minio.messages.DeleteObject;
@@ -27,6 +29,7 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.Resource;
 import java.io.*;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
@@ -62,6 +65,10 @@ public class MediaFileServiceImpl implements MediaFileService {
     @Value("${minio.bucket.videofiles}")
     private String bucket_video;
 
+    @Resource
+    MediaProcessMapper mediaProcessMapper;
+
+
     /**
      * 媒资列表查询
      * @param companyId
@@ -74,7 +81,6 @@ public class MediaFileServiceImpl implements MediaFileService {
 
         //构建查询条件对象
         LambdaQueryWrapper<MediaFiles> queryWrapper = new LambdaQueryWrapper<>();
-
         //分页对象
         Page<MediaFiles> page = new Page<>(pageParams.getPageNo(), pageParams.getPageSize());
         // 查询数据内容获得结果
@@ -205,11 +211,18 @@ public class MediaFileServiceImpl implements MediaFileService {
             mediaFiles.setStatus("1");
             //审核状态   002003 审核已通过
             mediaFiles.setAuditStatus("002003");
+            //插入数据库
             int insert = mediaFilesMapper.insert(mediaFiles);
             if (insert <= 0) {
                 log.debug("向数据库保存文件信息失败,bucket:{},objectName:{}", bucket, objectName);
                 return null;
             }
+            //记录待处理的任务
+            addWaitingTask(mediaFiles);
+
+
+            //向MediaProcess插入记录
+
             log.debug("保存文件信息到数据库成功,{}", mediaFiles.toString());
             return mediaFiles;
         }
@@ -217,12 +230,34 @@ public class MediaFileServiceImpl implements MediaFileService {
     }
 
     /**
-     * 上传文件
-     * @param companyId 机构id
-     * @param uploadFileParamsDto 文件信息
-     * @param localFilePath 文件本地路径
-     * @return
+     * 添加待处理任务
+     * @param mediaFiles 媒资文件信息
      */
+    private void addWaitingTask(MediaFiles mediaFiles) {
+        //获取文件的mimeType
+        //1.文件名称
+        String filename = mediaFiles.getFilename();
+        //2.文件扩展名
+        String extension = filename.substring(filename.lastIndexOf("."));
+        String mimeType = getMimeType(extension);
+
+        if (mimeType.equals("video/x-msvideo")){//如果是avi视频则写入待处理任务表
+            MediaProcess mediaProcess = new MediaProcess();
+            BeanUtils.copyProperties(mediaFiles,mediaProcess);
+            mediaProcess.setStatus("1");//未处理
+            mediaProcess.setCreateDate(LocalDateTime.now());
+            mediaProcess.setFailCount(0);//失败次数
+            mediaProcessMapper.insert(mediaProcess);
+        }
+        //判断如果是avi视频  写入待处理任务
+    }
+        /**
+         * 上传文件
+         * @param companyId 机构id
+         * @param uploadFileParamsDto 文件信息
+         * @param localFilePath 文件本地路径
+         * @return
+         */
     @Override
     public UploadFileResultDto uploadFile(Long companyId, UploadFileParamsDto uploadFileParamsDto, String localFilePath) {
         File file = new File(localFilePath);
@@ -296,6 +331,12 @@ public class MediaFileServiceImpl implements MediaFileService {
         return RestResponse.success(false);
     }
 
+    /**
+     * 分块文件上传前的检测
+     * @param fileMd5  文件的md5
+     * @param chunkIndex  分块序号
+     * @return
+     */
     @Override
     public RestResponse<Boolean> checkChunk(String fileMd5, int chunkIndex) {
         //分块存储路径是: md5 的前两位为两个子目录,子目录里chunk用来存储分块文件
@@ -430,6 +471,7 @@ public class MediaFileServiceImpl implements MediaFileService {
         }
         //清理分块文件
         clearChunkFiles(chunkFileFolderPath, chunkTotal);
+
         return RestResponse.success(true);
     }
 

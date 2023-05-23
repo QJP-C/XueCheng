@@ -54,6 +54,11 @@ public class MediaProcess implements Serializable {
     private LocalDateTime finishDate;
 
     /**
+     * 失败次数
+     */
+    private int failCount;
+
+    /**
      * 媒资文件访问地址
      */
     private String url;

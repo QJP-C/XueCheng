@@ -5,8 +5,8 @@ import com.xuecheng.content.model.dto.CourseBaseInfoDto;
 import com.xuecheng.content.model.dto.EditCourseDto;
 import com.xuecheng.content.model.po.CourseBase;
 import com.xuecheng.content.model.dto.QueryCourseParamsDto;
-import com.xuecheng.xuechengplusbase.model.PageParams;
-import com.xuecheng.xuechengplusbase.model.PageResult;
+import com.xuecheng.xuechengplus.base.model.PageParams;
+import com.xuecheng.xuechengplus.base.model.PageResult;
 
 /**
  * @author qjp

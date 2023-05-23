@@ -8,7 +8,7 @@ import com.xuecheng.content.model.dto.TeachplanDto;
 import com.xuecheng.content.model.po.Teachplan;
 import com.xuecheng.content.model.po.TeachplanMedia;
 import com.xuecheng.content.service.TeachplanService;
-import com.xuecheng.xuechengplusbase.exception.XueChengPlusException;
+import com.xuecheng.xuechengplus.base.exception.XueChengPlusException;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

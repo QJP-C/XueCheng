@@ -8,7 +8,7 @@ import com.xuecheng.content.mapper.CourseTeacherMapper;
 import com.xuecheng.content.model.po.CourseBase;
 import com.xuecheng.content.model.po.CourseTeacher;
 import com.xuecheng.content.service.CourseTeacherService;
-import com.xuecheng.xuechengplusbase.exception.XueChengPlusException;
+import com.xuecheng.xuechengplus.base.exception.XueChengPlusException;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
