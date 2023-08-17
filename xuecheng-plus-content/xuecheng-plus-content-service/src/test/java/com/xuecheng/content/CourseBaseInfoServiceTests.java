@@ -27,7 +27,7 @@ public class CourseBaseInfoServiceTests {
         dto.setPublishStatus("203001");
 
         PageParams pageParams = new PageParams(1L, 2L);
-        System.out.println(courseBaseInfoService.queryCourseBaseList(pageParams, dto));
+        System.out.println(courseBaseInfoService.queryCourseBaseList(null,pageParams, dto));
     }
 }
 

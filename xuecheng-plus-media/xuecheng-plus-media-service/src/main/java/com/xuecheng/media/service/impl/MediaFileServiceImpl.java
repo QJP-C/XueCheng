@@ -28,6 +28,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 import javax.annotation.Resource;
 import java.io.*;
@@ -138,6 +139,7 @@ public class MediaFileServiceImpl implements MediaFileService {
      * @author qjp
      * @date 2023/4/2 15:17
      */
+    @Override
     public boolean addMediaFilesToMinIO(String localFilePath, String mimeType, String bucket, String objectName) {
         try {
             UploadObjectArgs uploadObjectArgs = UploadObjectArgs.builder()
@@ -244,9 +246,11 @@ public class MediaFileServiceImpl implements MediaFileService {
         if (mimeType.equals("video/x-msvideo")){//如果是avi视频则写入待处理任务表
             MediaProcess mediaProcess = new MediaProcess();
             BeanUtils.copyProperties(mediaFiles,mediaProcess);
+            mediaProcess.setFilePath(mediaFiles.getFilePath());
             mediaProcess.setStatus("1");//未处理
             mediaProcess.setCreateDate(LocalDateTime.now());
             mediaProcess.setFailCount(0);//失败次数
+            mediaProcess.setUrl(null);
             mediaProcessMapper.insert(mediaProcess);
         }
         //判断如果是avi视频  写入待处理任务
@@ -259,7 +263,7 @@ public class MediaFileServiceImpl implements MediaFileService {
          * @return
          */
     @Override
-    public UploadFileResultDto uploadFile(Long companyId, UploadFileParamsDto uploadFileParamsDto, String localFilePath) {
+    public UploadFileResultDto uploadFile(Long companyId, UploadFileParamsDto uploadFileParamsDto, String localFilePath,String objectName) {
         File file = new File(localFilePath);
         if (!file.exists()) {
             XueChengPlusException.cast("文件不存在");
@@ -275,7 +279,10 @@ public class MediaFileServiceImpl implements MediaFileService {
         //文件的默认目录
         String defaultFolderPath = getDefaultFolderPath();
         //存储到minio中的对象名(带目录)
-        String objectName = defaultFolderPath + fileMd5 + extension;
+        if (StringUtils.isEmpty(objectName)){
+            //使用默认的年月日存储
+            objectName = defaultFolderPath + fileMd5 + extension;
+        }
         //将文件上传到minio
         boolean result = addMediaFilesToMinIO(localFilePath, mimeType, bucket_mediafiles, objectName);
         if (!result){
@@ -519,6 +526,7 @@ public class MediaFileServiceImpl implements MediaFileService {
      * @author qjp
      * @date 2023/4/10 20:28
      */
+    @Override
     public File downloadFileFromMinIO(String bucket, String objectName) {
         File minioFile = null;
         FileOutputStream outputStream = null;
@@ -544,6 +552,16 @@ public class MediaFileServiceImpl implements MediaFileService {
             }
         }
         return null;
+    }
+
+    /**
+     * 根据媒资id查询文件信息
+     * @param mediaId
+     * @return
+     */
+    @Override
+    public MediaFiles getFileById(String mediaId) {
+        return mediaFilesMapper.selectById(mediaId);
     }
 
 

@@ -3,12 +3,14 @@ package com.xuecheng;
 import com.spring4all.swagger.EnableSwagger2Doc;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.cloud.openfeign.EnableFeignClients;
 
 /**
  * @author qjp
  */
 @EnableSwagger2Doc
-//解释一下这段代码
+@EnableFeignClients(basePackages={"com.xuecheng.content.feignclient"})
+
 @SpringBootApplication
 public class ContentApplication {
     public static void main(String[] args) {

@@ -3,6 +3,7 @@ package com.xuecheng.content.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xuecheng.content.mapper.TeachplanMapper;
 import com.xuecheng.content.mapper.TeachplanMediaMapper;
+import com.xuecheng.content.model.dto.BindTeachplanMediaDto;
 import com.xuecheng.content.model.dto.SaveTeachplanDto;
 import com.xuecheng.content.model.dto.TeachplanDto;
 import com.xuecheng.content.model.po.Teachplan;
@@ -10,9 +11,10 @@ import com.xuecheng.content.model.po.TeachplanMedia;
 import com.xuecheng.content.service.TeachplanService;
 import com.xuecheng.xuechengplus.base.exception.XueChengPlusException;
 import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.Resource;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -24,10 +26,11 @@ import java.util.List;
  */
 @Service
 public class TeachplanServiceImpl implements TeachplanService {
-    @Autowired
+    @Resource
     TeachplanMapper teachplanMapper;
-    @Autowired
+    @Resource
     TeachplanMediaMapper teachplanMediaMapper;
+
     /***
     * @description 根据id查询课程计划信息
     * @param courseId
@@ -36,7 +39,7 @@ public class TeachplanServiceImpl implements TeachplanService {
     * @date 2023/3/10 19:15
     */
     @Override
-    public List<TeachplanDto> findTeachplayTree(Long courseId) {
+    public List<TeachplanDto> findTeachplanTree(Long courseId) {
         return teachplanMapper.selectTreeNodes(courseId);
     }
 
@@ -155,6 +158,35 @@ public class TeachplanServiceImpl implements TeachplanService {
                 .eq(Teachplan::getOrderby, orderBy1-1);
         //交换
         exchange(teachplan, wrapper);
+    }
+
+    /**
+     * 教学计划绑定媒资
+     * @param bindTeachplanMediaDto
+     * @return
+     */
+    @Override
+    @Transactional
+    public TeachplanMedia associationMedia(BindTeachplanMediaDto bindTeachplanMediaDto) {
+        //课程计划id
+        Long teachplanId = bindTeachplanMediaDto.getTeachplanId();
+        Teachplan teachplan = teachplanMapper.selectById(teachplanId);
+        if (teachplan == null){
+            XueChengPlusException.cast("课程计划不存在");
+        }
+        LambdaQueryWrapper<TeachplanMedia> qw = new LambdaQueryWrapper<>();
+        qw.eq(TeachplanMedia::getTeachplanId,bindTeachplanMediaDto.getTeachplanId());
+        //先删除原有记录  根据课程计划id删除它绑定的媒资
+        int delete = teachplanMediaMapper.delete(qw);
+
+
+        //再添加新纪录
+        TeachplanMedia teachplanMedia = new TeachplanMedia();
+        BeanUtils.copyProperties(bindTeachplanMediaDto,teachplanMedia);
+        teachplanMedia.setCourseId(teachplan.getCourseId());
+        teachplanMedia.setMediaFilename(bindTeachplanMediaDto.getFileName());
+        teachplanMediaMapper.insert(teachplanMedia);
+        return null;
     }
 
     /***

@@ -18,6 +18,7 @@ import java.time.LocalDateTime;
 public class MediaFiles implements Serializable {
 
     private static final long serialVersionUID = 1L;
+
     /**
      * 主键
      */
@@ -58,7 +59,6 @@ public class MediaFiles implements Serializable {
      * 存储路径
      */
     private String filePath;
-
 
 
     /**
@@ -113,6 +113,5 @@ public class MediaFiles implements Serializable {
      * 文件大小
      */
     private Long fileSize;
-
 
 }

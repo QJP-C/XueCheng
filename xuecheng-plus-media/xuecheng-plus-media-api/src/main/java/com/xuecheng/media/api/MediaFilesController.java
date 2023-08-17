@@ -51,7 +51,8 @@ public class MediaFilesController {
     @ApiOperation("上传文件")
     @RequestMapping(value = "/upload/coursefile",consumes = MediaType.MULTIPART_FORM_DATA_VALUE)//指定消费者（java后端）接收的类型
     @ResponseBody
-    public UploadFileResultDto upload(@RequestPart("filedata")MultipartFile filedata) throws IOException {
+    public UploadFileResultDto upload(@RequestPart("filedata")MultipartFile filedata,
+                                      @RequestParam(value = "objectName",required=false) String objectName) throws IOException {
         //准备上传文件信息
         UploadFileParamsDto uploadFileParamsDto = new UploadFileParamsDto();
         //原始文件名称
@@ -70,7 +71,7 @@ public class MediaFilesController {
         //文件路径
         String localFilePath = tempFile.getAbsolutePath();
 
-        return mediaFileService.uploadFile(companyId,uploadFileParamsDto,localFilePath);
+        return mediaFileService.uploadFile(companyId,uploadFileParamsDto,localFilePath,objectName);
 
     }
 

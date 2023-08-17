@@ -2,6 +2,7 @@ package com.xuecheng.media.model.po;
 
 import com.baomidou.mybatisplus.annotation.*;
 import lombok.Data;
+import lombok.ToString;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
@@ -14,6 +15,7 @@ import java.time.LocalDateTime;
  * @author itcast
  */
 @Data
+@ToString
 @TableName("media_process")
 public class MediaProcess implements Serializable {
 
@@ -37,6 +39,8 @@ public class MediaProcess implements Serializable {
      */
     private String bucket;
 
+    private String filePath;
+
     /**
      * 状态,1:未处理，视频处理完成更新为2
      */
@@ -54,14 +58,21 @@ public class MediaProcess implements Serializable {
     private LocalDateTime finishDate;
 
     /**
+     * 媒资文件访问地址
+     */
+    private String url;
+
+    /**
+     * 失败原因
+     */
+    private String errormsg;
+
+    /**
      * 失败次数
      */
     private int failCount;
 
-    /**
-     * 媒资文件访问地址
-     */
-    private String url;
+
 
 
 }

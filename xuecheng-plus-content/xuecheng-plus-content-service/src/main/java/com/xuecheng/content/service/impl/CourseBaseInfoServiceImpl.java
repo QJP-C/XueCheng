@@ -47,14 +47,16 @@ public class CourseBaseInfoServiceImpl implements CourseBaseInfoService {
     private TeachplanWorkDao teachplanWorkDao;
 
     @Override
-    public PageResult<CourseBase> queryCourseBaseList(PageParams pageParams, QueryCourseParamsDto dto) {
+    public PageResult<CourseBase> queryCourseBaseList(Long companyId,PageParams pageParams, QueryCourseParamsDto dto) {
 
         LambdaQueryWrapper<CourseBase> wrapper = new LambdaQueryWrapper<>();
         wrapper.like(StringUtils.isNotEmpty(dto.getCourseName()), CourseBase::getName, dto.getCourseName());
         wrapper.eq(StringUtils.isNotEmpty(dto.getAuditStatus()), CourseBase::getAuditStatus, dto.getAuditStatus());
         wrapper.eq(StringUtils.isNotEmpty(dto.getPublishStatus()), CourseBase::getStatus, dto.getPublishStatus());
         Page<CourseBase> page = new Page<>(pageParams.getPageNo(), pageParams.getPageSize());
-
+        //todo：根据课程发布状态查询
+        //根据培训机构id拼装查询条件
+        wrapper.eq(CourseBase::getCompanyId,companyId);
         Page<CourseBase> pageResult = courseBaseMapper.selectPage(page, wrapper);
         //数据
         List<CourseBase> records = pageResult.getRecords();
@@ -124,8 +126,8 @@ public class CourseBaseInfoServiceImpl implements CourseBaseInfoService {
         //通过courseCategoryMapper查询分类信息,查出分类名放入返回结果
         CourseCategory bigCourseCategory = courseCategoryMapper.selectById(courseBaseInfoDto.getMt());
         CourseCategory litCourseCategory = courseCategoryMapper.selectById(courseBaseInfoDto.getSt());
-        courseBaseInfoDto.setMtName(bigCourseCategory.getName());
-        courseBaseInfoDto.setStName(litCourseCategory.getName());
+        courseBaseInfoDto.setMtName(bigCourseCategory.getName());//大分类名称
+        courseBaseInfoDto.setStName(litCourseCategory.getName());//小分类名称
         return courseBaseInfoDto;
     }
     /***
